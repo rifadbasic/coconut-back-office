@@ -8,6 +8,7 @@ import {
   UserCircle,
   LogOut,
   LogIn,
+  Home,
 } from "lucide-react";
 
 const BackOfficeNavbar = () => {
@@ -23,11 +24,23 @@ const BackOfficeNavbar = () => {
     <nav className="bg-green-900 text-white px-6 py-4 flex items-center justify-between shadow-md relative">
       {/* Brand */}
       <div className="text-2xl font-bold tracking-wide flex items-center gap-2">
-        🥥 <span>Coconut Back Office</span>
+        <NavLink to="/">🥥 <span>Coconut Back Office</span></NavLink>
       </div>
 
       {/* Desktop Nav Links */}
       <ul className="hidden md:flex gap-6 items-center">
+        <li>
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `flex items-center gap-2 px-3 py-2 rounded-lg transition ${
+                isActive ? "bg-green-700" : "hover:bg-green-800"
+              }`
+            }
+          >
+            <Home size={20} /> Home
+          </NavLink>
+        </li>
         <li>
           <NavLink
             to="/orders"
@@ -43,14 +56,14 @@ const BackOfficeNavbar = () => {
 
         <li>
           <NavLink
-            to="/add-product"
+            to="/products"
             className={({ isActive }) =>
               `flex items-center gap-2 px-3 py-2 rounded-lg transition ${
                 isActive ? "bg-green-700" : "hover:bg-green-800"
               }`
             }
           >
-            <PlusCircle size={20} /> Add Product
+            <PlusCircle size={20} /> Products
           </NavLink>
         </li>
 

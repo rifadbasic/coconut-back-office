@@ -25,7 +25,7 @@ const Home = () => {
           </a>
 
           <a
-            href="/add-product"
+            href="/products"
             className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-xl flex items-center gap-3 shadow-md transition"
           >
             <Package size={22} /> Add New Product
