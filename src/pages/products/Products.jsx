@@ -16,17 +16,22 @@ const Products = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch products
+  // 🔹 Fetch Products
   const fetchProducts = async () => {
     try {
-      const res = await axiosSecure.get(
-        `/products?page=${currentPage}&search=${search}`
-      );
-      setProducts(res.data.products);
-      setTotalPages(res.data.totalPages);
-    } catch (err) {
-      console.error(err);
-      Swal.fire("Error", "Failed to fetch products", "error");
+      const res = await axiosSecure.get("/products", {
+        params: { search, page: currentPage, limit: 10 },
+      });
+
+      if (res.data.success) {
+        setProducts(res.data.products || []);
+        setTotalPages(res.data.totalPages || 1);
+      } else {
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      Swal.fire("Error", "Failed to load products", "error");
     }
   };
 
@@ -34,43 +39,51 @@ const Products = () => {
     fetchProducts();
   }, [currentPage, search]);
 
+  // 🔹 Add Product
   const handleAddProduct = (newProduct) => {
     setProducts((prev) => [newProduct, ...prev]);
   };
 
+  // 🔹 Delete Product
   const handleDelete = async (id) => {
-    const result = await Swal.fire({
+    const confirm = await Swal.fire({
       title: "Are you sure?",
-      text: "This action cannot be undone!",
+      text: "You can't undo this!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, delete it!",
     });
-
-    if (result.isConfirmed) {
+    if (confirm.isConfirmed) {
       try {
-        await axiosSecure.delete(`/products/${id}`);
-        Swal.fire("Deleted!", "Product has been deleted.", "success");
-        fetchProducts();
+        const res = await axiosSecure.delete(`/products/${id}`);
+        if (res.data.success) {
+          Swal.fire("Deleted!", "Product deleted.", "success");
+          fetchProducts();
+        }
       } catch (error) {
-        console.error(error);
-        Swal.fire(
-          "Error!",
-          error.response?.data?.message || "Failed to delete product",
-          "error"
-        );
+        Swal.fire("Error", "Failed to delete product", "error");
       }
     }
   };
 
+  // 🔹 Save Edited Product
   const handleEditSave = async (updatedProduct) => {
     try {
-      await axiosSecure.put(`/products/${updatedProduct._id}`, updatedProduct);
-      Swal.fire("Updated!", "Product updated successfully.", "success");
-      setEditModalOpen(false);
-      fetchProducts();
+      const res = await axiosSecure.put(
+        `/products/${updatedProduct._id}`,
+        updatedProduct
+      );
+
+      if (res.data.success) {
+        Swal.fire("Updated!", "Product updated successfully.", "success");
+        setEditModalOpen(false);
+        fetchProducts();
+      } else {
+        Swal.fire("Error", "No changes were made.", "warning");
+      }
     } catch (error) {
-      Swal.fire("Error!", "Failed to update product", "error");
+      console.error(error);
+      Swal.fire("Error", "Failed to update product", "error");
     }
   };
 
@@ -92,66 +105,71 @@ const Products = () => {
       <AddProductForm onAdd={handleAddProduct} />
 
       <div className="overflow-x-auto mt-6">
-        <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-          <thead className="bg-green-900 text-white">
-            <tr>
-              <th>Image</th>
-              <th>Name</th>
-              <th>Price</th>
-              <th>Discount</th>
-              <th>Actual Price</th>
-              <th>Stock</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p._id} className="border-b hover:bg-green-50">
-                <td>
-                  <img
-                    src={p.img}
-                    alt={p.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                </td>
-                <td>{p.name}</td>
-                <td>${p.price}</td>
-                <td>{p.discount}%</td>
-                <td>${(p.price - (p.price * p.discount) / 100).toFixed(2)}</td>
-                <td>{p.stock}</td>
-                <td className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedProduct(p);
-                      setViewModalOpen(true);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
-                  >
-                    View
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedProduct(p);
-                      setEditModalOpen(true);
-                    }}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(p._id)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
+        {products.length ? (
+          <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <thead className="bg-green-900 text-white">
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Discount</th>
+                <th>Final Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products.map((p) => (
+                <tr key={p._id} className="border-b  hover:bg-green-50">
+                  <td>
+                    <img
+                      src={p.img}
+                      alt={p.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  </td>
+                  <td>{p.name}</td>
+                  <td>${p.price}</td>
+                  <td>{p.discount}%</td>
+                  <td>
+                    ${(p.price - (p.price * p.discount) / 100).toFixed(2)}
+                  </td>
+                  <td>{p.stock}</td>
+                  <td className="flex mt-2 gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedProduct(p);
+                        setViewModalOpen(true);
+                      }}
+                      className="bg-blue-600 text-white px-3 py-1 rounded"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedProduct(p);
+                        setEditModalOpen(true);
+                      }}
+                      className="bg-yellow-500 text-white px-3 py-1 rounded"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(p._id)}
+                      className="bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="text-center text-gray-600 mt-10">No products found.</p>
+        )}
       </div>
 
-      {/* Pagination */}
       <div className="flex justify-center mt-6 gap-2">
         <button
           disabled={currentPage === 1}

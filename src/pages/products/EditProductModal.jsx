@@ -4,12 +4,14 @@ import Modal from "react-modal";
 Modal.setAppElement("#root");
 
 const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
-  const [formData, setFormData] = useState(product);
+  const [formData, setFormData] = useState({});
+  const [preview, setPreview] = useState("");
   const [finalPrice, setFinalPrice] = useState(0);
 
   // Update local state when product changes
   useEffect(() => {
-    setFormData(product);
+    setFormData(product || {});
+    setPreview(product?.img || "");
   }, [product]);
 
   // Calculate final price whenever price or discount changes
@@ -23,16 +25,14 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "img" && files.length > 0) {
-      setFormData({ ...formData, img: URL.createObjectURL(files[0]) });
-    } else if (name === "stock" || name === "discount" || name === "price") {
-      setFormData({ ...formData, [name]: Number(value) });
+      setFormData({ ...formData, imgFile: files[0] });
+      setPreview(URL.createObjectURL(files[0]));
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
   const handleSave = () => {
-    // Send the updated product including finalPrice
     onSave({ ...formData, finalPrice });
   };
 
@@ -43,24 +43,25 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
       className="bg-white p-6 rounded-lg max-w-3xl mx-auto mt-10 shadow-lg outline-none max-h-[90vh] overflow-y-auto"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50"
     >
-      <h2 className="text-2xl font-bold mb-4">Edit Product</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">Edit Product</h2>
 
       {/* Image Preview */}
-      {formData.img && (
+      {preview && (
         <img
-          src={formData.img}
-          alt={formData.name}
-          className="w-40 h-40 object-cover mb-4 mx-auto"
+          src={preview}
+          alt="preview"
+          className="w-40 h-40 object-cover mb-4 mx-auto rounded"
         />
       )}
 
-      {/* Form Grid: 2 columns */}
+      {/* Form */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label>
           Image:
           <input
             type="file"
             name="img"
+            accept="image/*"
             onChange={handleChange}
             className="w-full mt-1"
           />
@@ -70,7 +71,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
           <input
             type="text"
             name="name"
-            value={formData.name}
+            value={formData.name || ""}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded mt-1"
           />
@@ -80,7 +81,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
           <input
             type="text"
             name="shortDesc"
-            value={formData.shortDesc}
+            value={formData.shortDesc || ""}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded mt-1"
           />
@@ -90,7 +91,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
           <input
             type="text"
             name="country"
-            value={formData.country}
+            value={formData.country || ""}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded mt-1"
           />
@@ -99,7 +100,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
           Category:
           <select
             name="category"
-            value={formData.category}
+            value={formData.category || ""}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded mt-1"
           >
@@ -115,7 +116,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
           <input
             type="number"
             name="stock"
-            value={formData.stock}
+            value={formData.stock || ""}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded mt-1"
           />
@@ -125,7 +126,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
           <input
             type="number"
             name="discount"
-            value={formData.discount}
+            value={formData.discount || ""}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded mt-1"
           />
@@ -135,12 +136,13 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
           <input
             type="number"
             name="price"
-            value={formData.price}
+            value={formData.price || ""}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded mt-1"
           />
-          <p className="mt-1 text-sm text-gray-600">
-            Actual Price after discount: <span className="font-bold">${finalPrice.toFixed(2)}</span>
+          <p className="text-sm text-gray-600">
+            Final Price:{" "}
+            <span className="font-bold">${finalPrice.toFixed(2)}</span>
           </p>
         </label>
         <label>
@@ -148,15 +150,15 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
           <input
             type="text"
             name="weight"
-            value={formData.weight}
+            value={formData.weight || ""}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded mt-1"
           />
         </label>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-3 mt-4">
+      {/* Buttons */}
+      <div className="flex justify-end gap-3 mt-6">
         <button
           onClick={onClose}
           className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
