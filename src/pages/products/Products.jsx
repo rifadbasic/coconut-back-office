@@ -91,18 +91,22 @@ const Products = () => {
     <div className="p-6 bg-green-50 min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-green-900">Products</h1>
 
-      <input
-        type="text"
-        placeholder="Search product..."
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setCurrentPage(1);
-        }}
-        className="w-full md:w-1/3 border px-3 py-2 rounded mb-4"
-      />
-
       <AddProductForm onAdd={handleAddProduct} />
+
+      {/* 🔹 Search */}
+      <div className="mt-4">
+        <h1 className="text-2xl text-black mb-2">Search Product by Name</h1>
+        <input
+          type="text"
+          placeholder="Search product..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full md:w-1/3 border px-3 py-2 rounded mb-4"
+        />
+      </div>
 
       <div className="overflow-x-auto mt-6">
         {products.length ? (

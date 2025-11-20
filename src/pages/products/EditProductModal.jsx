@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
+import axios from "axios";
 
 Modal.setAppElement("#root");
 
@@ -22,14 +23,32 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
     setFinalPrice(discountedPrice);
   }, [formData.price, formData.discount]);
 
+  const imgHandleChange = async (e) => {
+    e.preventDefault();
+    const image = e.target.files[0];
+    if (!image) return;
+
+    setPreview(URL.createObjectURL(image));
+    const imgForm = new FormData();
+    imgForm.append("image", image);
+
+    try {
+      const uploadUrl = `https://api.imgbb.com/1/upload?key=${
+        import.meta.env.VITE_image_uplode_key
+      }`;
+      
+      const res = await axios.post(uploadUrl, imgForm);
+      const imageUrl = res.data.data.url;
+
+      setFormData((prev) => ({ ...prev, img: imageUrl }));
+    } catch (error) {
+      console.error("Image upload failed:", error);
+    } 
+  };
+
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "img" && files.length > 0) {
-      setFormData({ ...formData, imgFile: files[0] });
-      setPreview(URL.createObjectURL(files[0]));
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSave = () => {
@@ -62,7 +81,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
             type="file"
             name="img"
             accept="image/*"
-            onChange={handleChange}
+            onChange={imgHandleChange}
             className="w-full mt-1"
           />
         </label>

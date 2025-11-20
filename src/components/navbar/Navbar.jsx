@@ -126,7 +126,7 @@ const BackOfficeNavbar = () => {
           </NavLink>
 
           <NavLink
-            to="/add-product"
+            to="/products"
             onClick={() => setMenuOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-2 px-3 py-2 rounded-lg w-full transition ${
