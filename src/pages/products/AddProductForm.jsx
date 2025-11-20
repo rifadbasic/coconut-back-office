@@ -200,7 +200,7 @@ const AddProductForm = () => {
           <input
             type="number"
             name="stock"
-            value={formData.stock}
+            value={formData.stock || 0}
             onChange={handleChange}
             placeholder="Stock Available"
             className="border px-3 py-2 rounded"
@@ -212,7 +212,7 @@ const AddProductForm = () => {
           <input
             type="number"
             name="price"
-            value={formData.price}
+            value={formData.price || 0 }
             onChange={handleChange}
             placeholder="Real Price"
             className="border px-3 py-2 rounded"
@@ -224,7 +224,7 @@ const AddProductForm = () => {
           <input
             type="number"
             name="discount"
-            value={formData.discount}
+            value={formData.discount || 0}
             onChange={handleChange}
             placeholder="Discount Amount"
             className="border px-3 py-2 rounded"
@@ -236,7 +236,7 @@ const AddProductForm = () => {
           <input
             type="text"
             name="actualPrice"
-            value={formData.actualPrice.toFixed(2)}
+            value={formData.actualPrice.toFixed(2) || 0}
             readOnly
             className="border px-3 py-2 rounded bg-gray-100"
           />
@@ -247,7 +247,7 @@ const AddProductForm = () => {
           <input
             type="text"
             name="weight"
-            value={formData.weight}
+            value={formData.weight || 0 }
             onChange={handleChange}
             placeholder="Weight"
             className="border px-3 py-2 rounded"
