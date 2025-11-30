@@ -1,21 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
+import { FaBangladeshiTakaSign } from "react-icons/fa6";
+import useAxios from "../../hook/useAxios";
 
 Modal.setAppElement("#root"); // required
 
 const EditOrderModal = ({ order, isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState(order);
 
-  const totalPrice =
-    formData.products.reduce((sum, p) => sum + p.price * p.qty, 0) +
-    formData.deliveryCost;
+  const axiosSecure = useAxios();
 
+  console.log(formData)
+
+  useEffect(() => {
+    setFormData(order);
+  }, [order]);
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    onSave(formData);
+  const handleSave = async () => {
+    const res = await axiosSecure.put(`/orders/${formData._id}`, formData);
+
+    if (res.data.success) onSave(formData);
   };
 
   return (
@@ -28,8 +35,8 @@ const EditOrderModal = ({ order, isOpen, onClose, onSave }) => {
       <h2 className="text-2xl font-bold mb-4">Edit Order</h2>
       <input
         type="text"
-        name="customerName"
-        value={formData.customerName}
+        name="name"
+        value={formData.name}
         onChange={handleChange}
         placeholder="Customer Name"
         className="w-full border px-3 py-2 rounded mb-2"
@@ -60,22 +67,30 @@ const EditOrderModal = ({ order, isOpen, onClose, onSave }) => {
       />
       <input
         type="text"
-        name="invoice"
-        value={formData.invoice}
+        name="invoiceNumber"
+        value={formData.invoiceNumber}
         onChange={handleChange}
         placeholder="Invoice"
         className="w-full border px-3 py-2 rounded mb-2"
       />
       <input
         type="number"
-        name="deliveryCost"
-        value={formData.deliveryCost}
+        name="deliveryCharge"
+        value={formData.deliveryCharge}
         onChange={handleChange}
         placeholder="Delivery Cost"
         className="w-full border px-3 py-2 rounded mb-4"
       />
 
-      <p className="font-bold mb-4">Total: ${totalPrice}</p>
+      <input 
+        type="number"
+        name="finalTotal"
+        value={(Math.round(formData.finalTotal))}
+        onChange={handleChange}
+        placeholder="Total Price"
+        className="w-full border px-3 py-2 rounded mb-4"
+        >
+      </input>
 
       <div className="flex justify-end gap-3">
         <button
