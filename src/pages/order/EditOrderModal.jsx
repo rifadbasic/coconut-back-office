@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
-import { FaBangladeshiTakaSign } from "react-icons/fa6";
+// import { FaBangladeshiTakaSign } from "react-icons/fa6";
 import useAxios from "../../hook/useAxios";
 
 Modal.setAppElement("#root"); // required

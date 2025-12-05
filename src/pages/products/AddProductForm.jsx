@@ -16,46 +16,45 @@ const AddProductForm = () => {
     stock: 0,
     discount: 0,
     price: 0,
-    actualPrice: 0,
+    finalPrice: 0,
     weight: "",
   });
 
-  // 🧮 Calculate actual price automatically
+  // 🔥 Auto-calc final price
   useEffect(() => {
     const { price, discount } = formData;
-    const actual = price - (price * discount) / 100;
-    setFormData((prev) => ({ ...prev, actualPrice: actual }));
+    const final = price - (price * discount) / 100;
+    setFormData((prev) => ({ ...prev, finalPrice: final }));
   }, [formData.price, formData.discount]);
 
-  // 📸 Upload image to imgbb
+  // 📸 Image upload
   const handleImageUpload = async (e) => {
     const image = e.target.files[0];
     if (!image) return;
 
     setUploading(true);
-    const imgForm = new FormData();
-    imgForm.append("image", image);
+    const fd = new FormData();
+    fd.append("image", image);
 
     try {
-      const uploadUrl = `https://api.imgbb.com/1/upload?key=${
+      const url = `https://api.imgbb.com/1/upload?key=${
         import.meta.env.VITE_image_uplode_key
       }`;
-      const res = await axios.post(uploadUrl, imgForm);
+      const res = await axios.post(url, fd);
       const imageUrl = res.data.data.url;
 
       setFormData((prev) => ({ ...prev, img: imageUrl }));
-      
     } catch (error) {
-      console.error("Image upload failed:", error);
-      
+      console.log("Upload failed:", error);
     } finally {
       setUploading(false);
     }
   };
 
-  // 🎯 Input change handler
+  // 🎯 Input change
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if (["price", "discount", "stock"].includes(name)) {
       setFormData({ ...formData, [name]: Number(value) });
     } else {
@@ -63,29 +62,29 @@ const AddProductForm = () => {
     }
   };
 
-  // 💾 Submit to MongoDB
+  // 💾 Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.img) {
-      Swal.fire({
+      return Swal.fire({
         icon: "warning",
         title: "Image Missing!",
         text: "Please upload an image first.",
       });
-      return;
     }
 
     try {
       const res = await axiosSecure.post("/products", formData);
-      if (res.data?.insertedId || res.data?.result?.insertedId) {
+
+      if (res.data?.insertedId) {
         Swal.fire({
           icon: "success",
           title: "Product Added!",
-          text: "Your product has been added successfully.",
           timer: 2000,
           showConfirmButton: false,
         });
+
         // Reset form
         setFormData({
           img: "",
@@ -96,16 +95,15 @@ const AddProductForm = () => {
           stock: 0,
           discount: 0,
           price: 0,
-          actualPrice: 0,
+          finalPrice: 0,
           weight: "",
         });
       }
     } catch (err) {
-      console.error(err);
       Swal.fire({
         icon: "error",
         title: "Failed!",
-        text: "Something went wrong while saving the product.",
+        text: "Something went wrong.",
       });
     }
   };
@@ -115,20 +113,17 @@ const AddProductForm = () => {
       onSubmit={handleSubmit}
       className="bg-white p-6 rounded shadow-md flex flex-col gap-4"
     >
-      <h2 className="text-2xl font-bold mb-2 text-center">Add Product</h2>
+      <h2 className="text-2xl font-bold text-center">Add Product</h2>
 
-      {/* Image Preview */}
       {formData.img && (
         <img
           src={formData.img}
-          alt="Preview"
-          className="w-32 h-32 object-cover mb-4 mx-auto rounded"
+          className="w-32 h-32 rounded object-cover mx-auto"
         />
       )}
 
-      {/* Form Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Upload image */}
+        {/* Image Upload */}
         <div className="flex flex-col">
           <label className="font-semibold">Image Upload</label>
           <input
@@ -138,7 +133,7 @@ const AddProductForm = () => {
             className="border px-3 py-2 rounded"
           />
           {uploading && (
-            <span className="text-sm text-blue-600 mt-1">Uploading...</span>
+            <span className="text-blue-600 text-sm">Uploading…</span>
           )}
         </div>
 
@@ -147,10 +142,9 @@ const AddProductForm = () => {
           <input
             type="text"
             name="name"
+            className="border px-3 py-2 rounded"
             value={formData.name}
             onChange={handleChange}
-            placeholder="Product Name"
-            className="border px-3 py-2 rounded"
             required
           />
         </div>
@@ -160,10 +154,9 @@ const AddProductForm = () => {
           <input
             type="text"
             name="shortDesc"
+            className="border px-3 py-2 rounded"
             value={formData.shortDesc}
             onChange={handleChange}
-            placeholder="Short Description"
-            className="border px-3 py-2 rounded w-full"
           />
         </div>
 
@@ -172,10 +165,9 @@ const AddProductForm = () => {
           <input
             type="text"
             name="country"
+            className="border px-3 py-2 rounded"
             value={formData.country}
             onChange={handleChange}
-            placeholder="Country"
-            className="border px-3 py-2 rounded"
           />
         </div>
 
@@ -183,9 +175,9 @@ const AddProductForm = () => {
           <label className="font-semibold">Category</label>
           <select
             name="category"
+            className="border px-3 py-2 rounded"
             value={formData.category}
             onChange={handleChange}
-            className="border px-3 py-2 rounded"
           >
             <option value="Oil">Oil</option>
             <option value="Food">Food</option>
@@ -200,10 +192,9 @@ const AddProductForm = () => {
           <input
             type="number"
             name="stock"
-            value={formData.stock || 0}
-            onChange={handleChange}
-            placeholder="Stock Available"
             className="border px-3 py-2 rounded"
+            value={formData.stock}
+            onChange={handleChange}
           />
         </div>
 
@@ -212,10 +203,9 @@ const AddProductForm = () => {
           <input
             type="number"
             name="price"
-            value={formData.price || 0 }
-            onChange={handleChange}
-            placeholder="Real Price"
             className="border px-3 py-2 rounded"
+            value={formData.price}
+            onChange={handleChange}
           />
         </div>
 
@@ -224,21 +214,20 @@ const AddProductForm = () => {
           <input
             type="number"
             name="discount"
-            value={formData.discount || 0}
-            onChange={handleChange}
-            placeholder="Discount Amount"
             className="border px-3 py-2 rounded"
+            value={formData.discount}
+            onChange={handleChange}
           />
         </div>
 
+        {/* Final Price */}
         <div className="flex flex-col">
-          <label className="font-semibold">Actual Price ($)</label>
+          <label className="font-semibold">Final Price</label>
           <input
             type="text"
-            name="actualPrice"
-            value={formData.actualPrice.toFixed(2) || 0}
-            readOnly
             className="border px-3 py-2 rounded bg-gray-100"
+            value={formData.finalPrice.toFixed(2)}
+            readOnly
           />
         </div>
 
@@ -247,22 +236,18 @@ const AddProductForm = () => {
           <input
             type="text"
             name="weight"
-            value={formData.weight || 0 }
-            onChange={handleChange}
-            placeholder="Weight"
             className="border px-3 py-2 rounded"
+            value={formData.weight}
+            onChange={handleChange}
           />
         </div>
       </div>
 
       <button
-        type="submit"
         disabled={uploading}
         className={`${
-          uploading
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-green-600 hover:bg-green-700"
-        } text-white px-4 py-2 rounded mt-4`}
+          uploading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+        } text-white px-4 py-2 rounded`}
       >
         {uploading ? "Uploading..." : "Add Product"}
       </button>

@@ -9,41 +9,37 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
   const [preview, setPreview] = useState("");
   const [finalPrice, setFinalPrice] = useState(0);
 
-  // Update local state when product changes
+  // Load product into state
   useEffect(() => {
     setFormData(product || {});
     setPreview(product?.img || "");
   }, [product]);
 
-  // Calculate final price whenever price or discount changes
+  // Auto calculate final price
   useEffect(() => {
     const price = Number(formData.price) || 0;
     const discount = Number(formData.discount) || 0;
-    const discountedPrice = price - (price * discount) / 100;
-    setFinalPrice(discountedPrice);
+    setFinalPrice(price - (price * discount) / 100);
   }, [formData.price, formData.discount]);
 
-  const imgHandleChange = async (e) => {
-    e.preventDefault();
-    const image = e.target.files[0];
-    if (!image) return;
+  const handleImage = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    setPreview(URL.createObjectURL(image));
-    const imgForm = new FormData();
-    imgForm.append("image", image);
+    setPreview(URL.createObjectURL(file));
+
+    const fd = new FormData();
+    fd.append("image", file);
 
     try {
-      const uploadUrl = `https://api.imgbb.com/1/upload?key=${
+      const url = `https://api.imgbb.com/1/upload?key=${
         import.meta.env.VITE_image_uplode_key
       }`;
-      
-      const res = await axios.post(uploadUrl, imgForm);
-      const imageUrl = res.data.data.url;
-
-      setFormData((prev) => ({ ...prev, img: imageUrl }));
-    } catch (error) {
-      console.error("Image upload failed:", error);
-    } 
+      const res = await axios.post(url, fd);
+      setFormData((p) => ({ ...p, img: res.data.data.url }));
+    } catch (err) {
+      console.log("Upload error", err);
+    }
   };
 
   const handleChange = (e) => {
@@ -52,7 +48,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
   };
 
   const handleSave = () => {
-    onSave({ ...formData, finalPrice });
+    onSave({ ...formData }); // finalPrice NOT sent
   };
 
   return (
@@ -64,64 +60,56 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
     >
       <h2 className="text-2xl font-bold mb-4 text-center">Edit Product</h2>
 
-      {/* Image Preview */}
       {preview && (
         <img
           src={preview}
-          alt="preview"
-          className="w-40 h-40 object-cover mb-4 mx-auto rounded"
+          className="w-40 h-40 object-cover mx-auto rounded mb-4"
         />
       )}
 
-      {/* Form */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label>
           Image:
-          <input
-            type="file"
-            name="img"
-            accept="image/*"
-            onChange={imgHandleChange}
-            className="w-full mt-1"
-          />
+          <input type="file" onChange={handleImage} className="w-full mt-1" />
         </label>
+
         <label>
           Name:
           <input
-            type="text"
             name="name"
             value={formData.name || ""}
             onChange={handleChange}
-            className="w-full border px-3 py-2 rounded mt-1"
+            className="border w-full px-3 py-2 rounded mt-1"
           />
         </label>
+
         <label>
-          Short Description:
+          Short Desc:
           <input
-            type="text"
             name="shortDesc"
             value={formData.shortDesc || ""}
             onChange={handleChange}
-            className="w-full border px-3 py-2 rounded mt-1"
+            className="border w-full px-3 py-2 rounded mt-1"
           />
         </label>
+
         <label>
           Country:
           <input
-            type="text"
             name="country"
             value={formData.country || ""}
             onChange={handleChange}
-            className="w-full border px-3 py-2 rounded mt-1"
+            className="border w-full px-3 py-2 rounded mt-1"
           />
         </label>
+
         <label>
           Category:
           <select
             name="category"
             value={formData.category || ""}
             onChange={handleChange}
-            className="w-full border px-3 py-2 rounded mt-1"
+            className="border w-full px-3 py-2 rounded mt-1"
           >
             <option value="oil">Oil</option>
             <option value="showpic">Showpic</option>
@@ -130,6 +118,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
             <option value="other">Other</option>
           </select>
         </label>
+
         <label>
           Stock:
           <input
@@ -137,9 +126,10 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
             name="stock"
             value={formData.stock || ""}
             onChange={handleChange}
-            className="w-full border px-3 py-2 rounded mt-1"
+            className="border w-full px-3 py-2 rounded mt-1"
           />
         </label>
+
         <label>
           Discount (%):
           <input
@@ -147,46 +137,42 @@ const EditProductModal = ({ product, isOpen, onClose, onSave }) => {
             name="discount"
             value={formData.discount || ""}
             onChange={handleChange}
-            className="w-full border px-3 py-2 rounded mt-1"
+            className="border w-full px-3 py-2 rounded mt-1"
           />
         </label>
+
         <label>
-          Price ($):
+          Price:
           <input
             type="number"
             name="price"
             value={formData.price || ""}
             onChange={handleChange}
-            className="w-full border px-3 py-2 rounded mt-1"
+            className="border w-full px-3 py-2 rounded mt-1"
           />
-          <p className="text-sm text-gray-600">
-            Final Price:{" "}
-            <span className="font-bold">${finalPrice.toFixed(2)}</span>
+          <p className="text-sm mt-1">
+            Final Price: <b>${finalPrice.toFixed(2)}</b>
           </p>
         </label>
+
         <label>
           Weight:
           <input
-            type="text"
             name="weight"
             value={formData.weight || ""}
             onChange={handleChange}
-            className="w-full border px-3 py-2 rounded mt-1"
+            className="border w-full px-3 py-2 rounded mt-1"
           />
         </label>
       </div>
 
-      {/* Buttons */}
       <div className="flex justify-end gap-3 mt-6">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-        >
+        <button onClick={onClose} className="bg-gray-400 px-4 py-2 rounded">
           Cancel
         </button>
         <button
           onClick={handleSave}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          className="bg-green-600 text-white px-4 py-2 rounded"
         >
           Save
         </button>

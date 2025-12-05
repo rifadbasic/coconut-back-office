@@ -61,7 +61,7 @@ const Products = () => {
           fetchProducts();
         }
       } catch (error) {
-        Swal.fire("Error", "Failed to delete product", "error");
+        Swal.fire("Error", "Failed to delete product", error);
       }
     }
   };
@@ -153,6 +153,7 @@ const Products = () => {
                       onClick={() => {
                         setSelectedProduct(p);
                         setEditModalOpen(true);
+                        
                       }}
                       className="bg-yellow-500 text-white px-3 py-1 rounded"
                     >
