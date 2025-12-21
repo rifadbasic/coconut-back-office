@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Swal from "sweetalert2";
 import useAxios from "../../hook/useAxios";
 import axios from "axios";
@@ -11,23 +11,23 @@ const AddProductForm = () => {
     img: "",
     name: "",
     shortDesc: "",
+    brand: "",
     country: "",
     category: "Food",
     stock: 0,
-    discount: 0,
     price: 0,
-    finalPrice: 0,
-    weight: "",
+    discount: 0,
+    status: "In Stock",
+    description: [""],
   });
 
-  // 🔥 Auto-calc final price
-  useEffect(() => {
-    const { price, discount } = formData;
-    const final = price - (price * discount) / 100;
-    setFormData((prev) => ({ ...prev, finalPrice: final }));
-  }, [formData.price, formData.discount]);
+  // 🔢 Final Price (Derived – No Risk)
+  const finalPrice = Math.max(
+    formData.price - (formData.price * formData.discount) / 100,
+    0
+  ).toFixed(2);
 
-  // 📸 Image upload
+  // 📸 Image Upload
   const handleImageUpload = async (e) => {
     const image = e.target.files[0];
     if (!image) return;
@@ -41,25 +41,37 @@ const AddProductForm = () => {
         import.meta.env.VITE_image_uplode_key
       }`;
       const res = await axios.post(url, fd);
-      const imageUrl = res.data.data.url;
-
-      setFormData((prev) => ({ ...prev, img: imageUrl }));
-    } catch (error) {
-      console.log("Upload failed:", error);
+      setFormData((prev) => ({ ...prev, img: res.data.data.url }));
+    } catch {
+      Swal.fire("Error", "Image upload failed", "error");
     } finally {
       setUploading(false);
     }
   };
 
-  // 🎯 Input change
+  // ✏️ Input Change
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     if (["price", "discount", "stock"].includes(name)) {
-      setFormData({ ...formData, [name]: Number(value) });
+      setFormData((prev) => ({ ...prev, [name]: Number(value) }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  // 🧾 Description List
+  const handleDescChange = (index, value) => {
+    const updated = [...formData.description];
+    updated[index] = value;
+    setFormData((prev) => ({ ...prev, description: updated }));
+  };
+
+  const addDescField = () => {
+    setFormData((prev) => ({
+      ...prev,
+      description: [...prev.description, ""],
+    }));
   };
 
   // 💾 Submit
@@ -67,44 +79,37 @@ const AddProductForm = () => {
     e.preventDefault();
 
     if (!formData.img) {
-      return Swal.fire({
-        icon: "warning",
-        title: "Image Missing!",
-        text: "Please upload an image first.",
-      });
+      return Swal.fire("Warning", "Please upload product image", "warning");
     }
 
+    const payload = {
+      ...formData,
+      finalPrice: Number(finalPrice),
+      description: formData.description.filter(Boolean),
+    };
+
     try {
-      const res = await axiosSecure.post("/products", formData);
+      const res = await axiosSecure.post("/products", payload);
 
       if (res.data?.insertedId) {
-        Swal.fire({
-          icon: "success",
-          title: "Product Added!",
-          timer: 2000,
-          showConfirmButton: false,
-        });
+        Swal.fire("Success", "Product added successfully!", "success");
 
-        // Reset form
         setFormData({
           img: "",
           name: "",
           shortDesc: "",
+          brand: "",
           country: "",
           category: "Food",
           stock: 0,
-          discount: 0,
           price: 0,
-          finalPrice: 0,
-          weight: "",
+          discount: 0,
+          status: "In Stock",
+          description: [""],
         });
       }
-    } catch (err) {
-      Swal.fire({
-        icon: "error",
-        title: "Failed!",
-        text: "Something went wrong.",
-      });
+    } catch {
+      Swal.fire("Error", "Failed to add product", "error");
     }
   };
 
@@ -118,136 +123,147 @@ const AddProductForm = () => {
       {formData.img && (
         <img
           src={formData.img}
+          alt="preview"
           className="w-32 h-32 rounded object-cover mx-auto"
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Image Upload */}
-        <div className="flex flex-col">
-          <label className="font-semibold">Image Upload</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="border px-3 py-2 rounded"
-          />
-          {uploading && (
-            <span className="text-blue-600 text-sm">Uploading…</span>
-          )}
-        </div>
+      {/* IMAGE */}
+      <input type="file" accept="image/*" onChange={handleImageUpload} />
 
-        <div className="flex flex-col">
-          <label className="font-semibold">Name</label>
-          <input
-            type="text"
-            name="name"
-            className="border px-3 py-2 rounded"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      {/* BASIC INFO */}
+      <input
+        name="name"
+        placeholder="Product Name"
+        value={formData.name}
+        onChange={handleChange}
+        required
+        className="border p-2 rounded"
+      />
 
-        <div className="flex flex-col md:col-span-2">
-          <label className="font-semibold">Short Description</label>
-          <input
-            type="text"
-            name="shortDesc"
-            className="border px-3 py-2 rounded"
-            value={formData.shortDesc}
-            onChange={handleChange}
-          />
-        </div>
+      <textarea
+        name="shortDesc"
+        placeholder="Short description (1–2 lines)"
+        value={formData.shortDesc}
+        onChange={handleChange}
+        className="border p-2 rounded resize-none"
+        rows={2}
+      />
 
-        <div className="flex flex-col">
-          <label className="font-semibold">Country</label>
-          <input
-            type="text"
-            name="country"
-            className="border px-3 py-2 rounded"
-            value={formData.country}
-            onChange={handleChange}
-          />
-        </div>
+      <input
+        name="brand"
+        placeholder="Brand"
+        value={formData.brand}
+        onChange={handleChange}
+        className="border p-2 rounded"
+      />
 
-        <div className="flex flex-col">
-          <label className="font-semibold">Category</label>
-          <select
-            name="category"
-            className="border px-3 py-2 rounded"
-            value={formData.category}
-            onChange={handleChange}
-          >
-            <option value="Oil">Oil</option>
-            <option value="Food">Food</option>
-            <option value="Goods">Goods</option>
-            <option value="Showpic">Showpic</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
+      <input
+        name="country"
+        placeholder="Country"
+        value={formData.country}
+        onChange={handleChange}
+        className="border p-2 rounded"
+      />
 
-        <div className="flex flex-col">
-          <label className="font-semibold">Stock</label>
-          <input
-            type="number"
-            name="stock"
-            className="border px-3 py-2 rounded"
-            value={formData.stock}
-            onChange={handleChange}
-          />
-        </div>
+      {/* CATEGORY */}
+      <select
+        name="category"
+        value={formData.category}
+        onChange={handleChange}
+        className="border p-2 rounded"
+      >
+        <option>Body Care</option>
+        <option>Hair Care</option>
+        <option>Face Care</option>
+        <option>Skin Care</option>
+        <option>Eyes Care</option>
+        <option>Oral Care</option>
+        <option>Accessories</option>
+        <option>Cosmetics</option>
+        <option>Wearables</option>
+      </select>
 
-        <div className="flex flex-col">
-          <label className="font-semibold">Price ($)</label>
+      {/* STATUS */}
+      <select
+        name="status"
+        placeholder="Status"
+        value={formData.status}
+        onChange={handleChange}
+        className="border p-2 rounded"
+      >
+        <option>In Stock</option>
+        <option>Out of Stock</option>
+        <option>Limited</option>
+      </select>
+
+      {/* stock */}
+      <label className="font-semibold">Stock Quantity: </label>
+      <input
+        name="stock"
+        type="number"
+        placeholder="Stock"
+        value={formData.stock}
+        onChange={handleChange}
+        className="border p-2 rounded"
+      />
+
+      {/* PRICING */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-2">
+          <label className="font-semibold">Pricing: </label>
           <input
-            type="number"
             name="price"
-            className="border px-3 py-2 rounded"
+            type="number"
+            placeholder="Price"
             value={formData.price}
             onChange={handleChange}
+            className="border p-2 rounded"
           />
         </div>
-
-        <div className="flex flex-col">
-          <label className="font-semibold">Discount (%)</label>
+        <div className="col-span-2">
+          <label className="font-semibold">Discount (%): </label>
           <input
-            type="number"
             name="discount"
-            className="border px-3 py-2 rounded"
+            type="number"
+            placeholder="Discount %"
             value={formData.discount}
             onChange={handleChange}
-          />
-        </div>
-
-        {/* Final Price */}
-        <div className="flex flex-col">
-          <label className="font-semibold">Final Price</label>
-          <input
-            type="text"
-            className="border px-3 py-2 rounded bg-gray-100"
-            value={formData.finalPrice.toFixed(2)}
-            readOnly
-          />
-        </div>
-
-        <div className="flex flex-col">
-          <label className="font-semibold">Weight</label>
-          <input
-            type="text"
-            name="weight"
-            className="border px-3 py-2 rounded"
-            value={formData.weight}
-            onChange={handleChange}
+            className="border p-2 rounded"
           />
         </div>
       </div>
 
+      <input
+        value={`Final Price: ${finalPrice} Tk.`}
+        readOnly
+        className="border p-2 rounded bg-gray-100"
+      />
+
+      {/* DESCRIPTION LIST */}
+      <div>
+        <label className="font-semibold">Product Details</label>
+        {formData.description.map((desc, i) => (
+          <input
+            key={i}
+            value={desc}
+            onChange={(e) => handleDescChange(i, e.target.value)}
+            placeholder={`• Point ${i + 1}`}
+            className="border p-2 rounded mt-2 w-full"
+          />
+        ))}
+        <button
+          type="button"
+          onClick={addDescField}
+          className="text-sm text-green-600 mt-2"
+        >
+          + Add more
+        </button>
+      </div>
+
       <button
         disabled={uploading}
-        className={`${
-          uploading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
-        } text-white px-4 py-2 rounded`}
+        className="bg-green-600 hover:bg-green-700 text-white py-2 rounded"
       >
         {uploading ? "Uploading..." : "Add Product"}
       </button>

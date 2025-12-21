@@ -97,7 +97,7 @@ const Order = () => {
               0
             );
 
-            const totalPrice = subtotal + delivery - discount;
+            // const totalPrice = subtotal + delivery - discount;
 
             const formattedDate = order.createdAt
               ? new Date(order.createdAt).toLocaleString("en-US", {
@@ -127,7 +127,7 @@ const Order = () => {
 
     .invoice-wrapper {
       width: 350px;
-      max-height: 650px;
+      min-height: 650px;
       background: white;
       padding: 20px;
       border-radius: 10px;
@@ -252,7 +252,7 @@ const Order = () => {
 
     ${
       discount > 0
-        ? `<div><span>Discount:</span> <span>-${discount} TK</span></div>`
+        ? `<div><span>Discount:</span> <span>-${Math.round(discount)} TK</span></div>`
         : ""
     }
 
@@ -260,7 +260,7 @@ const Order = () => {
 
     <div style="font-size:18px; color:#0a7a0a;">
       <span>Grand Total:</span> 
-      <span>${totalPrice} TK</span>
+      <span>${Math.round(order.finalTotal)} TK</span>
     </div>
   </div>
 

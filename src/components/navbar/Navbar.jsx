@@ -21,10 +21,10 @@ const BackOfficeNavbar = () => {
   };
 
   return (
-    <nav className="bg-green-900 text-white px-6 py-4 flex items-center justify-between shadow-md relative">
+    <nav className="bg-[var(--secondary-color)] text-white px-6 py-4 flex items-center justify-between shadow-md relative">
       {/* Brand */}
       <div className="text-2xl font-bold tracking-wide flex items-center gap-2">
-        <NavLink to="/">🥥 <span>Coconut Back Office</span></NavLink>
+        <NavLink to="/"><span>Beauty & Care Back Office</span></NavLink>
       </div>
 
       {/* Desktop Nav Links */}
@@ -34,7 +34,7 @@ const BackOfficeNavbar = () => {
             to="/"
             className={({ isActive }) =>
               `flex items-center gap-2 px-3 py-2 rounded-lg transition ${
-                isActive ? "bg-green-700" : "hover:bg-green-800"
+                isActive ? "bg-[var(--secondary-color)]" : "hover:bg-[var(--primary-color)"
               }`
             }
           >
@@ -46,7 +46,7 @@ const BackOfficeNavbar = () => {
             to="/orders"
             className={({ isActive }) =>
               `flex items-center gap-2 px-3 py-2 rounded-lg transition ${
-                isActive ? "bg-green-700" : "hover:bg-green-800"
+                isActive ? "bg-[var(--secondary-color)]" : "hover:bg-[var(--primary-color)]"
               }`
             }
           >
@@ -59,7 +59,7 @@ const BackOfficeNavbar = () => {
             to="/products"
             className={({ isActive }) =>
               `flex items-center gap-2 px-3 py-2 rounded-lg transition ${
-                isActive ? "bg-green-700" : "hover:bg-green-800"
+                isActive ? "bg-[var(--secondary-color)]" : "hover:bg-[var(--primary-color)]"
               }`
             }
           >
@@ -71,29 +71,29 @@ const BackOfficeNavbar = () => {
         <li className="relative">
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2 hover:text-green-300 transition"
+            className="flex items-center gap-2  transition"
           >
             <UserCircle size={26} />
           </button>
 
           {/* Dropdown */}
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white text-green-900 rounded-lg shadow-md overflow-hidden z-50">
+            <div className="absolute right-0 mt-2 w-40 bg-white text-[var(--text-color)] rounded-lg shadow-md overflow-hidden z-50">
               <NavLink
                 to="/profile"
-                className="block px-4 py-2 hover:bg-green-100 transition"
+                className="block px-4 py-2 hover:bg-[var(--bg-color)] transition"
               >
                 Profile
               </NavLink>
               <NavLink
                 to="/login"
-                className="block px-4 py-2 hover:bg-green-100 transition flex items-center gap-2"
+                className="block px-4 py-2 hover:bg-[var(--bg-color)] transition flex items-center gap-2"
               >
                 <LogIn size={16} /> Login
               </NavLink>
               <button
                 onClick={handleLogout}
-                className="w-full text-left px-4 py-2 hover:bg-green-100 transition flex items-center gap-2"
+                className="w-full text-left px-4 py-2 hover:bg-[var(--bg-color)] transition flex items-center gap-2"
               >
                 <LogOut size={16} /> Logout
               </button>

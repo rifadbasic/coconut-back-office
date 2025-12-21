@@ -7,7 +7,7 @@ Modal.setAppElement("#root");
 const OrderModal = ({ order, isOpen, onClose }) => {
   if (!order) return null;
 
-  console.log(order);
+  // console.log(order);
 
   const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
     year: "numeric",
@@ -33,7 +33,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
       0
     );
 
-    const total = subtotal + delivery - discount;
+    // const total = subtotal + delivery - discount;
 
     // Format date
     const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
@@ -62,7 +62,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 
     .invoice-wrapper {
       width: 350px;
-      max-height: 650px;
+      min-height: 650px;
       background: white;
       padding: 20px;
       border-radius: 10px;
@@ -187,7 +187,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 
     ${
       discount > 0
-        ? `<div><span>Discount:</span> <span>-${discount} TK</span></div>`
+        ? `<div><span>Discount:</span> <span>-${Math.round(discount)} TK</span></div>`
         : ""
     }
 
@@ -195,7 +195,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 
     <div style="font-size:18px; color:#0a7a0a;">
       <span>Grand Total:</span> 
-      <span>${total} TK</span>
+      <span>${Math.round(order.finalTotal)} TK</span>
     </div>
   </div>
 
