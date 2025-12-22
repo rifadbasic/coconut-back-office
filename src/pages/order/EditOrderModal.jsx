@@ -1,109 +1,169 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
-// import { FaBangladeshiTakaSign } from "react-icons/fa6";
 import useAxios from "../../hook/useAxios";
 
-Modal.setAppElement("#root"); // required
+Modal.setAppElement("#root");
 
 const EditOrderModal = ({ order, isOpen, onClose, onSave }) => {
-  const [formData, setFormData] = useState(order);
-
   const axiosSecure = useAxios();
-
-  console.log(formData)
+  const [data, setData] = useState(order || { cartItems: [] });
 
   useEffect(() => {
-    setFormData(order);
+    if (order) setData(order);
   }, [order]);
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  // 🔄 Recalculate totals
+  const recalc = (cartItems, extra = {}) => {
+    const subtotal = cartItems.reduce((sum, p) => {
+      const finalPrice = Math.round(p.price - (p.price * p.discount) / 100);
+      return sum + finalPrice * p.quantity;
+    }, 0);
+
+    const discount =
+      (subtotal * Number(extra.orderDiscount ?? data.orderDiscount ?? 0)) / 100;
+
+    setData((prev) => ({
+      ...prev,
+      cartItems,
+      ...extra,
+      finalTotal: Math.round(
+        subtotal -
+          discount +
+          Number(extra.deliveryCharge ?? prev.deliveryCharge ?? 0)
+      ),
+    }));
   };
 
-  const handleSave = async () => {
-    const res = await axiosSecure.put(`/orders/${formData._id}`, formData);
+  // 🔢 Quantity
+  const updateQty = (id, type) => {
+    const items = data.cartItems.map((p) =>
+      p._id === id
+        ? {
+            ...p,
+            quantity:
+              type === "inc" ? p.quantity + 1 : Math.max(1, p.quantity - 1),
+          }
+        : p
+    );
 
-    if (res.data.success) onSave(formData);
+    recalc(items);
+  };
+
+  // ❌ Remove item
+  const removeItem = (id) => {
+    const items = data.cartItems.filter((p) => p._id !== id);
+    recalc(items);
+  };
+
+  // ✏️ Input change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    recalc(data.cartItems, { [name]: value });
+  };
+
+  // 💾 Save
+  const handleSave = async () => {
+    const res = await axiosSecure.put(`/orders/${data._id}`, data);
+    if (res.data.success) {
+      onSave(data);
+      onClose();
+    }
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
-      className="bg-white p-6 rounded-lg max-w-xl mx-auto mt-20 shadow-lg outline-none"
-      overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50"
+      className="bg-white p-6 rounded-xl max-w-4xl mx-auto mt-10 shadow-lg"
+      overlayClassName="fixed inset-0 bg-black/50 flex justify-center items-start z-50"
     >
       <h2 className="text-2xl font-bold mb-4">Edit Order</h2>
-      <input
-        type="text"
-        name="name"
-        value={formData.name}
-        onChange={handleChange}
-        placeholder="Customer Name"
-        className="w-full border px-3 py-2 rounded mb-2"
-      />
-      <input
-        type="email"
-        name="email"
-        value={formData.email}
-        onChange={handleChange}
-        placeholder="Email"
-        className="w-full border px-3 py-2 rounded mb-2"
-      />
-      <input
-        type="text"
-        name="phone"
-        value={formData.phone}
-        onChange={handleChange}
-        placeholder="Phone"
-        className="w-full border px-3 py-2 rounded mb-2"
-      />
-      <input
-        type="text"
-        name="address"
-        value={formData.address}
-        onChange={handleChange}
-        placeholder="Address"
-        className="w-full border px-3 py-2 rounded mb-2"
-      />
-      <input
-        type="text"
-        name="invoiceNumber"
-        value={formData.invoiceNumber}
-        onChange={handleChange}
-        placeholder="Invoice"
-        className="w-full border px-3 py-2 rounded mb-2"
-      />
-      <input
-        type="number"
-        name="deliveryCharge"
-        value={formData.deliveryCharge}
-        onChange={handleChange}
-        placeholder="Delivery Cost"
-        className="w-full border px-3 py-2 rounded mb-4"
-      />
 
-      <input 
-        type="number"
-        name="finalTotal"
-        value={(Math.round(formData.finalTotal))}
-        onChange={handleChange}
-        placeholder="Total Price"
-        className="w-full border px-3 py-2 rounded mb-4"
-        >
-      </input>
+      {/* CUSTOMER INFO */}
+      <div className="grid md:grid-cols-2 gap-3">
+        {["name", "email", "phone", "address"].map((f) => (
+          <input
+            key={f}
+            name={f}
+            value={data[f] || ""}
+            onChange={handleChange}
+            placeholder={f}
+            className="border px-3 py-2 rounded"
+          />
+        ))}
+      </div>
 
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+      {/* PRODUCTS */}
+      <h3 className="mt-6 font-semibold">Products</h3>
+
+      {data.cartItems?.map((item) => (
+        <div
+          key={item._id}
+          className="flex justify-between items-center border p-3 rounded mt-2"
         >
+          <div>
+            <p className="font-semibold">{item.name}</p>
+            <p className="text-sm text-gray-500">
+              {item.price} Tk × {item.quantity}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button onClick={() => updateQty(item._id, "dec")}>−</button>
+            <span>{item.quantity}</span>
+            <button onClick={() => updateQty(item._id, "inc")}>+</button>
+            <button
+              onClick={() => removeItem(item._id)}
+              className="text-red-600 ml-3"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      ))}
+
+      {/* DISCOUNT & DELIVERY */}
+      <div className="grid md:grid-cols-2 gap-4 mt-6">
+        <div>
+          <label className="font-semibold block mb-1">Order Discount (%)</label>
+          <input
+            type="number"
+            name="orderDiscount"
+            value={data.orderDiscount || 0}
+            onChange={handleChange}
+            className="border px-3 py-2 rounded w-full"
+          />
+        </div>
+
+        <div>
+          <label className="font-semibold block mb-1">Delivery Charge</label>
+          <input
+            type="number"
+            name="deliveryCharge"
+            value={data.deliveryCharge || 0}
+            onChange={handleChange}
+            className="border px-3 py-2 rounded w-full"
+          />
+        </div>
+      </div>
+
+      {/* TOTAL */}
+      <div className="text-right mt-6">
+        <p className="text-xl font-bold">
+          Final Total: {data.finalTotal || 0} Tk
+        </p>
+      </div>
+
+      {/* ACTIONS */}
+      <div className="flex justify-end gap-3 mt-6">
+        <button onClick={onClose} className="px-4 py-2 bg-gray-300 rounded">
           Cancel
         </button>
         <button
           onClick={handleSave}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          className="px-4 py-2 bg-green-600 text-white rounded"
         >
-          Save
+          Save Changes
         </button>
       </div>
     </Modal>

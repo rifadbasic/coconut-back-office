@@ -138,7 +138,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 <div class="invoice-wrapper">
   
   <div class="header">
-    <h1>Coconut BD</h1>
+    <h1>Beauty & Care</h1>
     <p style="font-size:12px;">Customer Support: 01765574008</p>
     <hr style="margin:10px 0;">
     <h2>INVOICE</h2>
@@ -202,7 +202,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
   <!-- Footer -->
   <div class="footer">
     <hr style="margin:15px 0;">
-    <p><strong>Thank you for shopping with Coconut BD ✓</strong></p>
+    <p><strong>Thank you for shopping with Beauty & Care ✓</strong></p>
     <p>
       ✓ You can return it within seven  <strong>7 days</strong> if you find any problems.<br>
       ✓ Must have an unboxing video.<br>

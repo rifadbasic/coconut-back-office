@@ -118,8 +118,6 @@ const AddProductForm = () => {
       onSubmit={handleSubmit}
       className="bg-white p-6 rounded shadow-md flex flex-col gap-4"
     >
-      <h2 className="text-2xl font-bold text-center">Add Product</h2>
-
       {formData.img && (
         <img
           src={formData.img}
@@ -128,9 +126,38 @@ const AddProductForm = () => {
         />
       )}
 
-      {/* IMAGE */}
-      <input type="file" accept="image/*" onChange={handleImageUpload} />
+      {/* stylist IMAGE */}
+      <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-green-400 rounded-lg cursor-pointer bg-green-50 hover:bg-green-100 transition">
+        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+          <svg
+            className="w-8 h-8 mb-3 text-green-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-5 4v-4m0 0l-2 2m2-2l2 2"
+            />
+          </svg>
 
+          <p className="mb-1 text-sm text-green-700">
+            <span className="font-semibold">Click to upload</span> or drag &
+            drop
+          </p>
+          <p className="text-xs text-gray-500">PNG, JPG, JPEG (Max 5MB)</p>
+        </div>
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
+        />
+      </label>
+      
       {/* BASIC INFO */}
       <input
         name="name"
@@ -209,8 +236,8 @@ const AddProductForm = () => {
       />
 
       {/* PRICING */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="col-span-2">
+      <div className="grid grid-rows-1 md:grid-cols-2 gap-4">
+        <div className="col-span-1">
           <label className="font-semibold">Pricing: </label>
           <input
             name="price"
@@ -221,7 +248,7 @@ const AddProductForm = () => {
             className="border p-2 rounded"
           />
         </div>
-        <div className="col-span-2">
+        <div className="col-span-1">
           <label className="font-semibold">Discount (%): </label>
           <input
             name="discount"

@@ -203,7 +203,7 @@ const Order = () => {
 <div class="invoice-wrapper">
   
   <div class="header">
-    <h1>Coconut BD</h1>
+    <h1>Beauty & Care</h1>
     <p style="font-size:12px;">Customer Support: 01765574008</p>
     <hr style="margin:10px 0;">
     <h2>INVOICE</h2>
@@ -267,7 +267,7 @@ const Order = () => {
   <!-- Footer -->
   <div class="footer">
     <hr style="margin:15px 0;">
-    <p><strong>Thank you for shopping with Coconut BD ✓</strong></p>
+    <p><strong>Thank you for shopping with Beauty & Care ✓</strong></p>
     <p>
       ✓ You can return it within seven  <strong>7 days</strong> if you find any problems.<br>
       ✓ Must have an unboxing video.<br>
@@ -323,7 +323,7 @@ const Order = () => {
 
   return (
     <div className="p-6 bg-green-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-green-900">Orders</h1>
+      <h1 className="text-3xl font-bold mb-6 text-[var(--secondary-color)]">Orders</h1>
 
       {/* Search */}
       <div className="mt-4">
@@ -342,7 +342,7 @@ const Order = () => {
       {/* Table */}
       <div className="overflow-x-auto mt-6">
         <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-          <thead className="bg-green-900 text-white">
+          <thead className="bg-[var(--secondary-color)] text-white">
             <tr>
               <th className="py-3 px-4 text-left">Customer</th>
               <th className="py-3 px-4 text-left">Phone</th>
@@ -354,7 +354,7 @@ const Order = () => {
           <tbody>
             {orders.length > 0 ? (
               orders.map((order) => (
-                <tr key={order._id} className="border-b hover:bg-green-50">
+                <tr key={order._id} className="border-b hover:bg-[var(--bg-color)]">
                   <td className="py-3 px-4">{order?.name || "-"}</td>
                   <td className="py-3 px-4">{order?.phone || "-"}</td>
                   <td className="py-3 px-4">

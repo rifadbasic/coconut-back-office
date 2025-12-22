@@ -9,6 +9,7 @@ import {
   LogOut,
   LogIn,
   Home,
+  LayoutList,
 } from "lucide-react";
 
 const BackOfficeNavbar = () => {
@@ -56,6 +57,19 @@ const BackOfficeNavbar = () => {
 
         <li>
           <NavLink
+            to="/add-product"
+            className={({ isActive }) =>
+              `flex items-center gap-2 px-3 py-2 rounded-lg transition ${
+                isActive ? "bg-[var(--secondary-color)]" : "hover:bg-[var(--primary-color)]"
+              }`
+            }
+          >
+            <PlusCircle size={20} /> Add Product
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink
             to="/products"
             className={({ isActive }) =>
               `flex items-center gap-2 px-3 py-2 rounded-lg transition ${
@@ -63,7 +77,7 @@ const BackOfficeNavbar = () => {
               }`
             }
           >
-            <PlusCircle size={20} /> Products
+            <LayoutList size={20} /> Products
           </NavLink>
         </li>
 
@@ -112,13 +126,13 @@ const BackOfficeNavbar = () => {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="absolute top-16 left-0 w-full bg-green-950 text-white flex flex-col items-start px-6 py-4 space-y-3 md:hidden shadow-lg z-40">
+        <div className="absolute top-16 left-0 w-full bg-[var(--bg-color)] text-[var(--text-color)] flex flex-col items-start px-6 py-4 space-y-3 md:hidden shadow-lg z-40">
           <NavLink
             to="/orders"
             onClick={() => setMenuOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-2 px-3 py-2 rounded-lg w-full transition ${
-                isActive ? "bg-green-800" : "hover:bg-green-800"
+                isActive ? "bg-[var(--secondary-color)]" : "hover:bg-[var(--primary-color)]"
               }`
             }
           >
@@ -126,38 +140,50 @@ const BackOfficeNavbar = () => {
           </NavLink>
 
           <NavLink
-            to="/products"
+            to="/add-product"
             onClick={() => setMenuOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-2 px-3 py-2 rounded-lg w-full transition ${
-                isActive ? "bg-green-800" : "hover:bg-green-800"
+                isActive ? "bg-[var(--secondary-color)]" : "hover:bg-[var(--primary-color)]"
               }`
             }
           >
             <PlusCircle size={20} /> Add Product
           </NavLink>
 
+          <NavLink
+            to="/products"
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-2 px-3 py-2 rounded-lg w-full transition ${
+                isActive ? "bg-[var(--secondary-color)]" : "hover:bg-[var(--primary-color)]"
+              }`
+            }
+          >
+            <LayoutList size={20} /> Products
+          </NavLink>
+
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-green-800 w-full transition"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--primary-color)] w-full transition"
           >
             <UserCircle size={20} /> Profile Options
           </button>
 
           {/* Mobile Profile Dropdown */}
           {profileOpen && (
-            <div className="w-full bg-green-800 rounded-lg text-sm">
+            <div className="w-full bg-[var(--primary-color)] rounded-lg text-sm">
               <NavLink
                 to="/profile"
                 onClick={() => setMenuOpen(false)}
-                className="block px-4 py-2 hover:bg-green-700 transition"
+                className="block px-4 py-2 hover:bg-[var(--bg-color)] transition"
               >
                 Profile
               </NavLink>
               <NavLink
                 to="/login"
                 onClick={() => setMenuOpen(false)}
-                className="block px-4 py-2 hover:bg-green-700 transition"
+                className="block px-4 py-2 hover:bg-[var(--bg-color)] transition"
               >
                 Login
               </NavLink>
@@ -166,7 +192,7 @@ const BackOfficeNavbar = () => {
                   handleLogout();
                   setMenuOpen(false);
                 }}
-                className="w-full text-left px-4 py-2 hover:bg-green-700 transition"
+                className="w-full text-left px-4 py-2 hover:bg-[var(--bg-color)] transition"
               >
                 Logout
               </button>

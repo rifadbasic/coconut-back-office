@@ -3,6 +3,7 @@ import MainLayout from "../layoutes/MainLayout";
 import Home  from "../pages/Home";
 import Products from "../pages/products/Products";
 import Order from './../pages/order/Order';
+import AddProduct from "../pages/products/AddProduct";
 
 
 
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
       {
         path: "/products",
         element: <Products />,
+      },
+      {
+        path: "/add-product",
+        element: <AddProduct/>,
       },
       {
         path: "/orders",

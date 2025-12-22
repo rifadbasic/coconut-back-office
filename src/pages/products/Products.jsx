@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import AddProductForm from "./AddProductForm";
 import ViewProductModal from "./ViewProductModal";
 import EditProductModal from "./EditProductModal";
 import useAxios from "../../hook/useAxios";
+import { Link } from "react-router";
+import { PlusCircle } from "lucide-react";
 
 const Products = () => {
   const axiosSecure = useAxios();
@@ -30,19 +31,13 @@ const Products = () => {
         setProducts([]);
       }
     } catch (error) {
-      console.error("Failed to fetch products:", error);
-      Swal.fire("Error", "Failed to load products", "error");
+      Swal.fire("Error", "Failed to load products", error);
     }
   };
 
   useEffect(() => {
     fetchProducts();
   }, [currentPage, search]);
-
-  // 🔹 Add Product
-  const handleAddProduct = (newProduct) => {
-    setProducts((prev) => [newProduct, ...prev]);
-  };
 
   // 🔹 Delete Product
   const handleDelete = async (id) => {
@@ -53,6 +48,7 @@ const Products = () => {
       showCancelButton: true,
       confirmButtonText: "Yes, delete it!",
     });
+
     if (confirm.isConfirmed) {
       try {
         const res = await axiosSecure.delete(`/products/${id}`);
@@ -60,8 +56,8 @@ const Products = () => {
           Swal.fire("Deleted!", "Product deleted.", "success");
           fetchProducts();
         }
-      } catch (error) {
-        Swal.fire("Error", "Failed to delete product", error);
+      } catch {
+        Swal.fire("Error", "Failed to delete product", "error");
       }
     }
   };
@@ -78,127 +74,151 @@ const Products = () => {
         Swal.fire("Updated!", "Product updated successfully.", "success");
         setEditModalOpen(false);
         fetchProducts();
-      } else {
-        Swal.fire("Error", "No changes were made.", "warning");
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       Swal.fire("Error", "Failed to update product", "error");
     }
   };
 
   return (
-    <div className="p-6 bg-green-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-green-900">Products</h1>
+    <div className="p-4 md:p-6 bg-green-50 min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <h1 className="text-3xl font-bold text-[var(--secondary-color)]">Products</h1>
 
-      <AddProductForm onAdd={handleAddProduct} />
-
-      {/* 🔹 Search */}
-      <div className="mt-4">
-        <h1 className="text-2xl text-black mb-2">Search Product by Name</h1>
-        <input
-          type="text"
-          placeholder="Search product..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="w-full md:w-1/3 border px-3 py-2 rounded mb-4"
-        />
+        <Link
+          to="/add-product"
+          className="bg-[var(--secondary-color)] hover:bg-[var(--primary-color)] flex justify-center items-center gap-2 text-white px-4 py-2 rounded w-full md:w-auto text-center"
+        >
+          <PlusCircle size={20} /> Add Product
+        </Link>
       </div>
 
-      <div className="overflow-x-auto mt-6">
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search product..."
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setCurrentPage(1);
+        }}
+        className="w-full md:w-1/3 border px-3 py-2 rounded mb-6"
+      />
+
+      {/* Table */}
+      <div className="overflow-x-auto">
         {products.length ? (
-          <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-            <thead className="bg-green-900 text-white">
-              <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Discount</th>
-                <th>Final Price</th>
-                <th>Stock</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p) => (
-                <tr key={p._id} className="border-b  hover:bg-green-50">
-                  <td>
-                    <img
-                      src={p.img}
-                      alt={p.name}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                  </td>
-                  <td>{p.name}</td>
-                  <td>${p.price}</td>
-                  <td>{p.discount}%</td>
-                  <td>
-                    ${(p.price - (p.price * p.discount) / 100).toFixed(2)}
-                  </td>
-                  <td>{p.stock}</td>
-                  <td className="flex mt-2 gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedProduct(p);
-                        setViewModalOpen(true);
-                      }}
-                      className="bg-blue-600 text-white px-3 py-1 rounded"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedProduct(p);
-                        setEditModalOpen(true);
-                        
-                      }}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(p._id)}
-                      className="bg-red-600 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <>
+            <table className="min-w-full bg-white shadow rounded">
+              <thead className="bg-[var(--secondary-color)] text-white">
+                <tr>
+                  <th className="p-2">Image</th>
+                  <th className="p-2">Name</th>
+                  <th className="p-2">Price</th>
+                  <th className="p-2">Discount</th>
+                  <th className="p-2">Final</th>
+                  <th className="p-2">Stock</th>
+                  <th className="p-2">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {products.map((p) => (
+                  <tr
+                    key={p._id}
+                    className="border-b hover:bg-green-50 text-center"
+                  >
+                    <td className="p-2">
+                      <img
+                        src={p.img}
+                        alt={p.name}
+                        className="w-12 h-12 mx-auto rounded object-cover"
+                      />
+                    </td>
+                    <td className="p-2">{p.name}</td>
+                    <td className="p-2">{p.price}</td>
+                    <td className="p-2">{p.discount}%</td>
+                    <td className="p-2">
+                      {(p.price - (p.price * p.discount) / 100).toFixed(2)}
+                    </td>
+                    <td className="p-2">{p.stock}</td>
+                    <td className="p-2 flex flex-wrap justify-center gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(p);
+                          setViewModalOpen(true);
+                        }}
+                        className="bg-blue-600 text-white px-3 py-1 rounded"
+                      >
+                        View
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(p);
+                          setEditModalOpen(true);
+                        }}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(p._id)}
+                        className="bg-red-600 text-white px-3 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* 🔹 Pagination */}
+            {totalPages > 1 && (
+              <div className="flex flex-wrap justify-center items-center gap-3 mt-6">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-green-600 text-white rounded disabled:bg-gray-400"
+                >
+                  Previous
+                </button>
+
+                <span className="font-medium">
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) =>
+                      Math.min(prev + 1, totalPages)
+                    )
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-green-600 text-white rounded disabled:bg-gray-400"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         ) : (
-          <p className="text-center text-gray-600 mt-10">No products found.</p>
+          <p className="text-center text-gray-500 mt-10">
+            No products found.
+          </p>
         )}
       </div>
 
-      <div className="flex justify-center mt-6 gap-2">
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage((prev) => prev - 1)}
-          className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-        >
-          Prev
-        </button>
-        <span className="px-3 py-2">
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage((prev) => prev + 1)}
-          className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
-
+      {/* Modals */}
       {viewModalOpen && selectedProduct && (
         <ViewProductModal
           product={selectedProduct}
-          isOpen={viewModalOpen}
+          isOpen
           onClose={() => setViewModalOpen(false)}
         />
       )}
@@ -206,7 +226,7 @@ const Products = () => {
       {editModalOpen && selectedProduct && (
         <EditProductModal
           product={selectedProduct}
-          isOpen={editModalOpen}
+          isOpen
           onClose={() => setEditModalOpen(false)}
           onSave={handleEditSave}
         />
