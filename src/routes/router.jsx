@@ -4,6 +4,7 @@ import Home  from "../pages/Home";
 import Products from "../pages/products/Products";
 import Order from './../pages/order/Order';
 import AddProduct from "../pages/products/AddProduct";
+import NotFound from "../pages/NotFound";
 
 
 
@@ -11,7 +12,7 @@ import AddProduct from "../pages/products/AddProduct";
 const router = createBrowserRouter([
   {
     path: "/",
-    errorElement: <div>404 Not Found</div>,
+    errorElement: <NotFound />,
     element: <MainLayout />,
     children: [
       {

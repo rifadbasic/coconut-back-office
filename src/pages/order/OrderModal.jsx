@@ -1,13 +1,11 @@
 import React from "react";
 import Modal from "react-modal";
-import { FaBangladeshiTakaSign } from "react-icons/fa6";
+// import { FaBangladeshiTakaSign } from "react-icons/fa6";
 
 Modal.setAppElement("#root");
 
 const OrderModal = ({ order, isOpen, onClose }) => {
   if (!order) return null;
-
-  // console.log(order);
 
   const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
     year: "numeric",
@@ -19,21 +17,21 @@ const OrderModal = ({ order, isOpen, onClose }) => {
     hour12: true,
   });
 
-  // handle print
+  // console.log(order)
+
+  const products = order.cartItems || [];
+  const delivery = Number(order.deliveryCharge) || 0;
+  const discount = order.discount || 0;
+  const subtotal = products.reduce(
+    (sum, p) => sum + Math.round(p.price) * p.quantity,
+    0
+  );
+
+  // console.log(subtotal)
+  // console.log(delivery)
+  const total = subtotal + delivery - discount;  // handle print
   const handlePrint = (order) => {
     const win = window.open("", "_blank");
-
-    const products = order.cartItems || [];
-    const delivery = order.deliveryCharge || 0;
-    const discount = order.discount || 0;
-
-    const subtotal = products.reduce(
-      (sum, p) =>
-        sum + Math.round(p.price - (p.price * p.discount) / 100) * p.quantity,
-      0
-    );
-
-    // const total = subtotal + delivery - discount;
 
     // Format date
     const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
@@ -170,10 +168,8 @@ const OrderModal = ({ order, isOpen, onClose }) => {
             <td>${i + 1}</td>
             <td>${p.name}</td>
             <td>${p.quantity}</td>
-            <td>${Math.round(p.price - (p.price * p.discount) / 100)}</td>
-            <td>${
-              Math.round(p.price - (p.price * p.discount) / 100) * p.quantity
-            }</td>
+            <td>${Math.round(p.price)}</td>
+            <td>${Math.round(p.price) * p.quantity}</td>
           </tr>
       `
         )
@@ -187,7 +183,9 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 
     ${
       discount > 0
-        ? `<div><span>Discount:</span> <span>-${Math.round(discount)} TK</span></div>`
+        ? `<div><span>Discount:</span> <span>-${Math.round(
+            discount
+          )} TK</span></div>`
         : ""
     }
 
@@ -195,7 +193,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 
     <div style="font-size:18px; color:#0a7a0a;">
       <span>Grand Total:</span> 
-      <span>${Math.round(order.finalTotal)} TK</span>
+      <span>${Math.round(total)} TK</span>
     </div>
   </div>
 
@@ -230,7 +228,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
       className="bg-white p-6 rounded-lg max-w-xl mx-auto mt-20 shadow-lg outline-none"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50"
     >
-      <p>Coconut-BD-support-01836598753</p>
+      <p>Beauty & Care - Customer support- 01836598753</p>
       <h2 className="text-2xl font-bold mb-4">{order.name} - Order</h2>
       <p>Invoice: {order.invoiceNumber}</p>
       <p>Date: {formattedDate}</p>
@@ -238,26 +236,27 @@ const OrderModal = ({ order, isOpen, onClose }) => {
       <p>Email: {order.email}</p>
       <p>Phone: {order.phone}</p>
       <p>Address: {order.address}</p>
+      <p>Order Status: <span className="font-bold">{order.status}</span></p>
 
       <h3 className="mt-4 font-semibold">Products:</h3>
       <ul className="list-disc list-inside">
         {order.cartItems?.map((p, i) => (
           <li key={i}>
-            {p.name} × {p.quantity} ={" "}
-            {Math.round(p.price - (p.price * p.discount) / 100) * p.quantity} TK
+            {p.name} = {Math.round(p.price)} × {p.quantity} ={" "}
+            {Math.round(p.price) * p.quantity} TK
           </li>
         ))}
       </ul>
 
       {/* have any discount */}
       {order.discount > 0 && (
-        <p className="mt-2 font-semibold">Discount: {order.discount} TK</p>
+        <p className="mt-2 font-semibold">
+          Discount: {Math.round(order.discount)} TK
+        </p>
       )}
 
-      <p className="mt-2 font-semibold">Delivery: {order.deliveryCharge} TK</p>
-      <p className="font-bold text-lg">
-        Total: {Math.round(order.finalTotal)} TK
-      </p>
+      <p className="mt-2 font-semibold">Delivery: {delivery} TK</p>
+      <p className="font-bold text-lg">Total: {Math.round(total)} TK</p>
 
       <div className="mt-6 flex justify-end gap-3">
         <button

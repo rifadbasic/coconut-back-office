@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import Swal from "sweetalert2";
 import useAxios from "../../hook/useAxios";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const AddProductForm = () => {
   const axiosSecure = useAxios();
   const [uploading, setUploading] = useState(false);
+
+  
 
   const [formData, setFormData] = useState({
     img: "",
@@ -21,7 +24,7 @@ const AddProductForm = () => {
     description: [""],
   });
 
-  // 🔢 Final Price (Derived – No Risk)
+  // 🔢 Final Price
   const finalPrice = Math.max(
     formData.price - (formData.price * formData.discount) / 100,
     0
@@ -42,8 +45,10 @@ const AddProductForm = () => {
       }`;
       const res = await axios.post(url, fd);
       setFormData((prev) => ({ ...prev, img: res.data.data.url }));
+
+      toast.success("Image uploaded successfully 🌿");
     } catch {
-      Swal.fire("Error", "Image upload failed", "error");
+      toast.error("Image upload failed. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -60,7 +65,7 @@ const AddProductForm = () => {
     }
   };
 
-  // 🧾 Description List
+  // 🧾 Description
   const handleDescChange = (index, value) => {
     const updated = [...formData.description];
     updated[index] = value;
@@ -74,13 +79,42 @@ const AddProductForm = () => {
     }));
   };
 
+  // 🧠 Validation (Toast Only)
+  const validateLevels = () => {
+    if (!formData.img) {
+      toast.warn("Level 1: Please upload product image");
+      return false;
+    }
+
+    if (!formData.name.trim()) {
+      toast.warn("Level 1: Product name is required");
+      return false;
+    }
+
+    if (!formData.category) {
+      toast.warn("Level 1: Category is required");
+      return false;
+    }
+
+    if (formData.stock <= 0) {
+      toast.warn("Level 2: Stock must be greater than 0");
+      return false;
+    }
+
+    if (formData.price <= 0) {
+      toast.warn("Level 2: Price must be greater than 0");
+      return false;
+    }
+
+    
+
+    return true;
+  };
+
   // 💾 Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.img) {
-      return Swal.fire("Warning", "Please upload product image", "warning");
-    }
+    if (!validateLevels()) return;
 
     const payload = {
       ...formData,
@@ -92,7 +126,12 @@ const AddProductForm = () => {
       const res = await axiosSecure.post("/products", payload);
 
       if (res.data?.insertedId) {
-        Swal.fire("Success", "Product added successfully!", "success");
+        Swal.fire({
+          icon: "success",
+          title: "Product Added",
+          text: "Product added successfully.",
+          confirmButtonText: "Alhamdulillah",
+        });
 
         setFormData({
           img: "",
@@ -100,11 +139,11 @@ const AddProductForm = () => {
           shortDesc: "",
           brand: "",
           country: "",
-          category: "Food",
+          category: "body care",
           stock: 0,
           price: 0,
           discount: 0,
-          status: "In Stock",
+          status: "regular",
           description: [""],
         });
       }
@@ -155,16 +194,17 @@ const AddProductForm = () => {
           accept="image/*"
           onChange={handleImageUpload}
           className="hidden"
+          
         />
       </label>
-      
+
       {/* BASIC INFO */}
       <input
         name="name"
         placeholder="Product Name"
         value={formData.name}
         onChange={handleChange}
-        required
+        
         className="border p-2 rounded"
       />
 
@@ -199,16 +239,17 @@ const AddProductForm = () => {
         value={formData.category}
         onChange={handleChange}
         className="border p-2 rounded"
+        
       >
-        <option>Body Care</option>
-        <option>Hair Care</option>
-        <option>Face Care</option>
-        <option>Skin Care</option>
-        <option>Eyes Care</option>
-        <option>Oral Care</option>
-        <option>Accessories</option>
-        <option>Cosmetics</option>
-        <option>Wearables</option>
+        <option>body care</option>
+        <option>hair care</option>
+        <option>face care</option>
+        <option>skin care</option>
+        <option>eyes care</option>
+        <option>oral care</option>
+        <option>accessories</option>
+        <option>cosmetics</option>
+        <option>wearables</option>
       </select>
 
       {/* STATUS */}
@@ -218,10 +259,12 @@ const AddProductForm = () => {
         value={formData.status}
         onChange={handleChange}
         className="border p-2 rounded"
+        
       >
-        <option>In Stock</option>
-        <option>Out of Stock</option>
-        <option>Limited</option>
+        <option>regular</option>
+        <option>new</option>
+        <option>combo</option>
+        <option>disabled</option>
       </select>
 
       {/* stock */}
@@ -233,6 +276,7 @@ const AddProductForm = () => {
         value={formData.stock}
         onChange={handleChange}
         className="border p-2 rounded"
+        
       />
 
       {/* PRICING */}
@@ -246,6 +290,7 @@ const AddProductForm = () => {
             value={formData.price}
             onChange={handleChange}
             className="border p-2 rounded"
+            
           />
         </div>
         <div className="col-span-1">
@@ -265,6 +310,7 @@ const AddProductForm = () => {
         value={`Final Price: ${finalPrice} Tk.`}
         readOnly
         className="border p-2 rounded bg-gray-100"
+        
       />
 
       {/* DESCRIPTION LIST */}

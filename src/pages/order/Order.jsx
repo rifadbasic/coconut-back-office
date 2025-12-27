@@ -12,6 +12,8 @@ const Order = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
+  // console.log(orders);
+
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -90,13 +92,9 @@ const Order = () => {
             const discount = order.discount || 0;
 
             const subtotal = products.reduce(
-              (sum, p) =>
-                sum +
-                (Math.round(p.price - (p.price * p.discount) / 100) || 0) *
-                  p.quantity,
+              (sum, p) => sum + Math.round(p.price) * p.quantity,
               0
             );
-
             // const totalPrice = subtotal + delivery - discount;
 
             const formattedDate = order.createdAt
@@ -235,10 +233,8 @@ const Order = () => {
             <td>${i + 1}</td>
             <td>${p.name}</td>
             <td>${p.quantity}</td>
-            <td>${Math.round(p.price - (p.price * p.discount) / 100)}</td>
-            <td>${
-              Math.round(p.price - (p.price * p.discount) / 100) * p.quantity
-            }</td>
+            <td>${Math.round(p.price)}</td>
+            <td>${Math.round(p.price) * p.quantity}</td>
           </tr>
       `
         )
@@ -252,7 +248,9 @@ const Order = () => {
 
     ${
       discount > 0
-        ? `<div><span>Discount:</span> <span>-${Math.round(discount)} TK</span></div>`
+        ? `<div><span>Discount:</span> <span>-${Math.round(
+            discount
+          )} TK</span></div>`
         : ""
     }
 
@@ -297,6 +295,94 @@ const Order = () => {
       });
   };
 
+  // ❌ Cancel order
+  const handleCancel = async (order) => {
+    if (!order?._id) return;
+
+    Swal.fire({
+      title: "Cancel this order?",
+      text: "Stock will be restored. This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, cancel order",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await axiosSecure.patch(`/orders/cancel/${order._id}`);
+
+          if (res.data?.success) {
+            Swal.fire("Canceled!", res.data.message, "success");
+
+            // Update frontend orders state
+            setOrders((prev) =>
+              prev.map((o) =>
+                o._id === order._id ? { ...o, status: "canceled" } : o
+              )
+            );
+          } else {
+            Swal.fire(
+              "Error",
+              res.data.message || "Failed to cancel order",
+              "error"
+            );
+          }
+        } catch (error) {
+          Swal.fire(
+            "Error",
+            error?.response?.data?.message || "Something went wrong",
+            "error"
+          );
+        }
+      }
+    });
+  };
+
+  // handle return (you will implement this later)
+  const handleReturn = async (order) => {
+    if (!order?._id) return;
+
+    Swal.fire({
+      title: "Return this order?",
+      text: "Stock will be restored. This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, return order",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await axiosSecure.patch(`/orders/return/${order._id}`);
+
+          if (res.data?.success) {
+            Swal.fire("Returned!", res.data.message, "success");
+
+            // Update frontend orders state
+            setOrders((prev) =>
+              prev.map((o) =>
+                o._id === order._id ? { ...o, status: "returned" } : o
+              )
+            );
+          } else {
+            Swal.fire(
+              "Error",
+              res.data.message || "Failed to return order",
+              "error"
+            );
+          }
+        } catch (error) {
+          Swal.fire(
+            "Error",
+            error?.response?.data?.message || "Something went wrong",
+            "error"
+          );
+        }
+      }
+    });
+  };
+
   // Delete order
   const handleDelete = async (orderId) => {
     if (!orderId) return;
@@ -323,13 +409,15 @@ const Order = () => {
 
   return (
     <div className="p-6 bg-green-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-[var(--secondary-color)]">Orders</h1>
+      <h1 className="text-3xl font-bold mb-6 text-[var(--secondary-color)]">
+        Orders
+      </h1>
 
       {/* Search */}
       <div className="mt-4">
         <input
           type="text"
-          placeholder="Search by name, invoice, phone..."
+          placeholder="Search by name, invoice, phone, status..."
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -354,47 +442,94 @@ const Order = () => {
           <tbody>
             {orders.length > 0 ? (
               orders.map((order) => (
-                <tr key={order._id} className="border-b hover:bg-[var(--bg-color)]">
+                <tr
+                  key={order._id}
+                  className="border-b hover:bg-[var(--bg-color)]"
+                >
                   <td className="py-3 px-4">{order?.name || "-"}</td>
                   <td className="py-3 px-4">{order?.phone || "-"}</td>
                   <td className="py-3 px-4">
                     {Math.round(order?.finalTotal || 0)}
                   </td>
-                  <td className="py-3 px-4 flex gap-2">
+                  <td className="py-3 px-4 flex gap-2 flex-wrap">
+                    {/* View - always visible */}
                     <button
                       onClick={() => handleView(order)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                      className="bg-blue-600 text-white px-3 py-1 rounded"
                     >
                       View
                     </button>
-                    <button
-                      onClick={() => handleEdit(order)}
-                      className={
-                        order?.status === "confirmed"
-                          ? "hidden"
-                          : "bg-yellow-400 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                      }
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleConfirm(order)}
-                      className={
-                        order?.status === "confirmed"
-                          ? "hidden"
-                          : "bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                      }
-                    >
-                      Confirm
-                    </button>
-                    <button
-                      onClick={() => handleDelete(order._id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
+
+                    {/* Edit - only pending */}
+                    {order.status === "pending" && (
+                      <button
+                        onClick={() => handleEdit(order)}
+                        className="bg-yellow-400 text-white px-3 py-1 rounded"
+                      >
+                        Edit
+                      </button>
+                    )}
+
+                    {/* Confirm - only pending */}
+                    {order.status === "pending" && (
+                      <button
+                        onClick={() => handleConfirm(order)}
+                        className="bg-green-600 text-white px-3 py-1 rounded"
+                      >
+                        Confirm
+                      </button>
+                    )}
+
+                    {/* Return - only confirmed */}
+                    {order.status === "confirmed" && (
+                      <button
+                        onClick={() => handleReturn(order)} // you will implement this later
+                        className="bg-purple-600 text-white px-3 py-1 rounded"
+                      >
+                        Return
+                      </button>
+                    )}
+
+                    {/* Cancel - pending & confirmed */}
+                    {order.status === "pending" && (
+                      <button
+                        onClick={() => handleCancel(order)}
+                        className="bg-red-600 text-white px-3 py-1 rounded"
+                      >
+                        Cancel
+                      </button>
+                    )}
+
+                    {/* Delete - confirmed, canceled, returned */}
+                    {(order.status === "confirmed" ||
+                      order.status === "canceled" ||
+                      order.status === "returned") && (
+                      <button
+                        onClick={() => handleDelete(order._id)}
+                        className="bg-gray-700 text-white px-3 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </td>
-                  <td className="py-3 px-4">{order?.status || "-"}</td>
+
+                  <td className="py-3 px-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-white font-semibold ${
+                        order?.status === "pending"
+                          ? "bg-sky-500"
+                          : order?.status === "canceled"
+                          ? "bg-red-500"
+                          : order?.status === "returned"
+                          ? "bg-yellow-500 text-black"
+                          : order?.status === "confirmed"
+                          ? "bg-green-500"
+                          : "bg-gray-400"
+                      }`}
+                    >
+                      {order?.status || "-"}
+                    </span>
+                  </td>
                 </tr>
               ))
             ) : (

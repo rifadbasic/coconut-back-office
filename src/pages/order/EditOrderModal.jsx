@@ -15,7 +15,7 @@ const EditOrderModal = ({ order, isOpen, onClose, onSave }) => {
   // 🔄 Recalculate totals
   const recalc = (cartItems, extra = {}) => {
     const subtotal = cartItems.reduce((sum, p) => {
-      const finalPrice = Math.round(p.price - (p.price * p.discount) / 100);
+      const finalPrice = Math.round(p.price );
       return sum + finalPrice * p.quantity;
     }, 0);
 
