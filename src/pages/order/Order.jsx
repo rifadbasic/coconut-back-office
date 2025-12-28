@@ -88,8 +88,9 @@ const Order = () => {
             }
 
             const products = order.cartItems || [];
-            const delivery = order.deliveryCharge || 0;
-            const discount = order.discount || 0;
+            const delivery = order?.pricing?.deliveryCharge || 0;
+            const discount = order?.pricing?.discountAmount || 0;
+            const discountPercentage = order?.pricing?.discountPercentage || 0;
 
             const subtotal = products.reduce(
               (sum, p) => sum + Math.round(p.price) * p.quantity,
@@ -209,10 +210,11 @@ const Order = () => {
 
   <p><strong>Date:</strong> ${formattedDate}</p>
   <p><strong>Invoice:</strong> ${order.invoiceNumber}</p>
-  <p><strong>Name:</strong> ${order.name}</p>
-  <p><strong>Email:</strong> ${order.email}</p>
-  <p><strong>Phone:</strong> ${order.phone}</p>
-  <p><strong>Address:</strong> ${order.address}</p>
+  <p><strong>Name:</strong> ${order?.customer?.name || "-"}</p>
+<p><strong>Email:</strong> ${order?.customer?.email || "-"}</p>
+<p><strong>Phone:</strong> ${order?.customer?.phone || "-"}</p>
+<p><strong>Address:</strong> ${order?.customer?.address || "-"}</p>
+
 
   <table>
     <thead>
@@ -248,7 +250,7 @@ const Order = () => {
 
     ${
       discount > 0
-        ? `<div><span>Discount:</span> <span>-${Math.round(
+        ? `<div><span>Discount: ${discountPercentage}% off</span> <span>- ${Math.round(
             discount
           )} TK</span></div>`
         : ""
@@ -258,7 +260,7 @@ const Order = () => {
 
     <div style="font-size:18px; color:#0a7a0a;">
       <span>Grand Total:</span> 
-      <span>${Math.round(order.finalTotal)} TK</span>
+      <span>${Math.round(order?.pricing?.finalTotal || 0)} TK</span>
     </div>
   </div>
 
@@ -446,10 +448,12 @@ const Order = () => {
                   key={order._id}
                   className="border-b hover:bg-[var(--bg-color)]"
                 >
-                  <td className="py-3 px-4">{order?.name || "-"}</td>
-                  <td className="py-3 px-4">{order?.phone || "-"}</td>
+                  <td className="py-3 px-4">{order?.customer?.name || "-"}</td>
+
+                  <td className="py-3 px-4">{order?.customer?.phone || "-"}</td>
+
                   <td className="py-3 px-4">
-                    {Math.round(order?.finalTotal || 0)}
+                    {Math.round(order?.pricing?.finalTotal || 0)}
                   </td>
                   <td className="py-3 px-4 flex gap-2 flex-wrap">
                     {/* View - always visible */}
@@ -461,7 +465,8 @@ const Order = () => {
                     </button>
 
                     {/* Edit - only pending */}
-                    {order.status === "pending" && (
+                    {(order.status === "pending" ||
+                      order.status === "confirmed") && (
                       <button
                         onClick={() => handleEdit(order)}
                         className="bg-yellow-400 text-white px-3 py-1 rounded"

@@ -20,8 +20,9 @@ const OrderModal = ({ order, isOpen, onClose }) => {
   // console.log(order)
 
   const products = order.cartItems || [];
-  const delivery = Number(order.deliveryCharge) || 0;
-  const discount = order.discount || 0;
+  const delivery = order?.pricing?.deliveryCharge || 0;
+  const discount = order?.pricing?.discountAmount || 0;
+  const discountPercentage = order?.pricing?.discountPercentage || 0;
   const subtotal = products.reduce(
     (sum, p) => sum + Math.round(p.price) * p.quantity,
     0
@@ -29,7 +30,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 
   // console.log(subtotal)
   // console.log(delivery)
-  const total = subtotal + delivery - discount;  // handle print
+  const total = subtotal + delivery - discount; // handle print
   const handlePrint = (order) => {
     const win = window.open("", "_blank");
 
@@ -144,10 +145,10 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 
   <p><strong>Date:</strong> ${formattedDate}</p>
   <p><strong>Invoice:</strong> ${order.invoiceNumber}</p>
-  <p><strong>Name:</strong> ${order.name}</p>
-  <p><strong>Email:</strong> ${order.email}</p>
-  <p><strong>Phone:</strong> ${order.phone}</p>
-  <p><strong>Address:</strong> ${order.address}</p>
+ <p><strong>Name:</strong> ${order?.customer?.name || "-"}</p>
+<p><strong>Email:</strong> ${order?.customer?.email || "-"}</p>
+<p><strong>Phone:</strong> ${order?.customer?.phone || "-"}</p>
+<p><strong>Address:</strong> ${order?.customer?.address || "-"}</p>
 
   <table>
     <thead>
@@ -183,7 +184,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 
     ${
       discount > 0
-        ? `<div><span>Discount:</span> <span>-${Math.round(
+        ? `<div><span>Discount: ${discountPercentage}% off</span> <span>- ${Math.round(
             discount
           )} TK</span></div>`
         : ""
@@ -193,7 +194,7 @@ const OrderModal = ({ order, isOpen, onClose }) => {
 
     <div style="font-size:18px; color:#0a7a0a;">
       <span>Grand Total:</span> 
-      <span>${Math.round(total)} TK</span>
+      <span>${Math.round(order?.pricing?.finalTotal || 0)} TK</span>
     </div>
   </div>
 
@@ -228,36 +229,43 @@ const OrderModal = ({ order, isOpen, onClose }) => {
       className="bg-white p-6 rounded-lg max-w-xl mx-auto mt-20 shadow-lg outline-none"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50"
     >
-      <p>Beauty & Care - Customer support- 01836598753</p>
-      <h2 className="text-2xl font-bold mb-4">{order.name} - Order</h2>
-      <p>Invoice: {order.invoiceNumber}</p>
-      <p>Date: {formattedDate}</p>
-      <p>Customer: {order.name}</p>
-      <p>Email: {order.email}</p>
-      <p>Phone: {order.phone}</p>
-      <p>Address: {order.address}</p>
-      <p>Order Status: <span className="font-bold">{order.status}</span></p>
-
-      <h3 className="mt-4 font-semibold">Products:</h3>
-      <ul className="list-disc list-inside">
-        {order.cartItems?.map((p, i) => (
-          <li key={i}>
-            {p.name} = {Math.round(p.price)} × {p.quantity} ={" "}
-            {Math.round(p.price) * p.quantity} TK
-          </li>
-        ))}
-      </ul>
-
-      {/* have any discount */}
-      {order.discount > 0 && (
-        <p className="mt-2 font-semibold">
-          Discount: {Math.round(order.discount)} TK
+      {/* 🌟 SCROLLABLE CONTENT */}
+      <div className="max-h-[70vh] overflow-y-auto pr-2">
+        <p>Beauty & Care - Customer support- 01836598753</p>
+        <h2 className="text-2xl font-bold mb-4">
+          {order?.customer?.name} - Order
+        </h2>
+        <p>Invoice: {order.invoiceNumber}</p>
+        <p>Date: {formattedDate}</p>
+        <p>Customer: {order?.customer?.name}</p>
+        <p>Email: {order?.customer?.email}</p>
+        <p>Phone: {order?.customer?.phone}</p>
+        <p>Address: {order?.customer?.address}</p>
+        <p>
+          Order Status: <span className="font-bold">{order.status}</span>
         </p>
-      )}
 
-      <p className="mt-2 font-semibold">Delivery: {delivery} TK</p>
-      <p className="font-bold text-lg">Total: {Math.round(total)} TK</p>
+        <h3 className="mt-4 font-semibold">Products:</h3>
+        <ul className="list-disc list-inside">
+          {order.cartItems?.map((p, i) => (
+            <li key={i}>
+              {p.name} = {Math.round(p.price)} × {p.quantity} ={" "}
+              {Math.round(p.price) * p.quantity} TK
+            </li>
+          ))}
+        </ul>
 
+        {discount > 0 && (
+          <p className="mt-2 font-semibold">
+            Discount: {discountPercentage}% - {Math.round(discount)} TK
+          </p>
+        )}
+
+        <p className="mt-2 font-semibold">Delivery: {delivery} TK</p>
+        <p className="font-bold text-lg">Total: {Math.round(total)} TK</p>
+      </div>
+
+      {/* FOOTER BUTTONS */}
       <div className="mt-6 flex justify-end gap-3">
         <button
           onClick={() => handlePrint(order)}

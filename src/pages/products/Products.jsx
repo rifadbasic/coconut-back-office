@@ -173,7 +173,10 @@ const Products = () => {
                   </td>
                   <td className="p-2">{p.discount}%</td>
                   <td className="p-2 capitalize">{p.status}</td>
-                  <td className="p-2">{p.stock}</td>
+                  {/* if stock is 0, show "Out of stock" */}
+                  <td className="p-2">
+                    {p.stock > 0 ? p.stock : <span className="text-red-600">Out of stock</span>}
+                  </td>
                   <td className="p-2 flex flex-wrap justify-center gap-2">
                     <button
                       onClick={() => {

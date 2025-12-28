@@ -16,11 +16,11 @@ const AddProductForm = () => {
     shortDesc: "",
     brand: "",
     country: "",
-    category: "Food",
+    category: "body care",
     stock: 0,
     price: 0,
     discount: 0,
-    status: "In Stock",
+    status: "regular",
     description: [""],
   });
 
